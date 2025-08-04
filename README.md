@@ -9,7 +9,7 @@ HomeHelp is an AI-powered MVP that connects elderly individuals (or their caregi
 - 🤝 Companionship
 
 ## 🌐 Live App
-👉 [Visit the app](https://your-subdomain.softr.app)
+👉 [Visit the app]([https://your-subdomain.softr.app](https://homehelpmvp.softr.app))
 
 ## ⚙️ Built With
 - **Softr** – Frontend
