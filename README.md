@@ -1,6 +1,6 @@
 # 🏠 HomeHelp – Elderly Assistance MVP
 
-HomeHelp is an AI-powered, no-code MVP that connects elderly individuals (or their caregivers) with local helpers for non-medical tasks like:
+HomeHelp is an AI-powered MVP that connects elderly individuals (or their caregivers) with local helpers for non-medical tasks like:
 
 - 🛒 Groceries
 - 🐶 Dog Walking
