@@ -1,0 +1,84 @@
+
+# HomeHelp - Emotional Tone Detection Agent (Groq version using LLaMA 3)
+# No OpenAI billing needed. Uses free Groq API.
+
+from groq import Groq
+import requests
+
+# 1. SETUP YOUR KEYS
+AIRTABLE_API_KEY = ""
+AIRTABLE_BASE_ID = "app3Oai93MfTOKY6X"
+AIRTABLE_TABLE_NAME = "Requests"
+GROQ_API_KEY = ""
+
+# 2. Airtable Setup
+airtable_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
+headers_airtable = {
+    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+    "Content-Type": "application/json"
+}
+
+# 3. Groq Client Setup (LLaMA 3)
+client = Groq(api_key=GROQ_API_KEY)
+
+def classify_tone(note):
+    prompt = f"""Classify the emotional tone of this help request into one of the following: Urgent, Routine, Frustrated, Lonely, Grateful.\n\nRequest: {note}\n\nTone:""" 
+    try:
+        response = client.chat.completions.create(
+            model="llama3-70b-8192",
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2
+        )
+        tone = response.choices[0].message.content.strip().split(":")[-1].strip()
+        return tone
+    except Exception as e:
+        print("❌ Groq error:", e)
+        return None
+
+def fetch_untagged_requests():
+    print("🔍 Connecting to Airtable...")
+    try:
+        response = requests.get(airtable_url, headers=headers_airtable, timeout=10)
+        print("📡 Airtable Status:", response.status_code)
+        if response.status_code != 200:
+            print("⚠️ Response:", response.text)
+        data = response.json()
+        records = data.get("records", [])
+        print(f"📦 Found {len(records)} records.")
+        return [r for r in records if not r['fields'].get("Emotional Tone")]
+    except Exception as e:
+        print("❌ Airtable error:", e)
+        return []
+
+def update_emotional_tone(record_id, tone):
+    update_url = f"{airtable_url}/{record_id}"
+    data = {"fields": {"Emotional Tone": tone}}
+    try:
+        response = requests.patch(update_url, json=data, headers=headers_airtable)
+        print(f"📝 Updated {record_id} with tone: {tone}")
+        return response.status_code == 200
+    except Exception as e:
+        print(f"❌ Failed to update {record_id}:", e)
+        return False
+
+def main():
+    print("🚀 Script is running (Groq version)...")
+    records = fetch_untagged_requests()
+    if not records:
+        print("✅ No untagged requests found.")
+        return
+
+    for record in records:
+        note = record['fields'].get("Notes")
+        record_id = record['id']
+        if not note:
+            continue
+        print(f"🧠 Classifying tone for: {note}")
+        tone = classify_tone(note)
+        if tone:
+            update_emotional_tone(record_id, tone)
+
+if __name__ == "__main__":
+    main()
